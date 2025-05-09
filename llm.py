@@ -2,7 +2,7 @@ from openai import OpenAI
 import requests
 import json
 
-PROMPT = "Reverse 1234. Then compute 7 * (3 + 2)."
+PROMPT = "Evaluate 20 + 20. Then reverse the result."
 
 try:
     with open("apikey.txt", "r") as file:
@@ -65,38 +65,47 @@ tools = [
 
 messages = [{"role": "user", "content": PROMPT}]
 
-# Step 3: Call GPT with tool usage
-response = client.chat.completions.create(model="gpt-4",
-messages=messages,
-tools=tools,
-tool_choice="auto")
+call_number = 0
+while True:
+    print(f'This is call number {call_number} to the LLM')
+    response = client.chat.completions.create(
+        model="gpt-4",
+        messages=messages,
+        tools=tools,
+        tool_choice="auto"
+    )
+    call_number += 1
 
-tool_calls = response.choices[0].message.tool_calls
-print(f'Number of tool calls = {len(tool_calls)}')
-messages.append(response.choices[0].message)
+    assistant_msg = response.choices[0].message
+    messages.append(assistant_msg)
 
-if tool_calls:
-    for tool_call in tool_calls:
-        if tool_call.function.name == "evaluate":
-            print("CALLING EVALUATE")
-            args = json.loads(tool_call.function.arguments)
-            expr = args["expression"]
-            result = call_mcp(expr, method='evaluate')
-        if tool_call.function.name == "reverse":
-            print("CALLING REVERSE")
-            args = json.loads(tool_call.function.arguments)
-            expr = args["number"]
-            result = call_mcp(expr, method='reverse')
+    tool_calls = assistant_msg.tool_calls
+    if tool_calls is None:
+        print('No tool calls')
+    else:
+        print(f'This call requires {len(tool_calls)} number of tool calls')
+
+    if not tool_calls:
+        print("Final answer:", assistant_msg.content)
+        break
+
+    for tool_call in assistant_msg.tool_calls:
+        args = json.loads(tool_call.function.arguments)
+        tool_name = tool_call.function.name
+
+        if tool_name == "evaluate":
+            print('Calling Evaluate')
+            result = call_mcp(args["expression"], method="evaluate")
+        elif tool_name == "reverse":
+            print('Calling Reverse')
+            result = call_mcp(args["number"], method="reverse")
+        else:
+            result = "Unsupported tool"
 
         messages.append({
             "role": "tool",
             "tool_call_id": tool_call.id,
-            "name": tool_call.function.name,
+            "name": tool_name,
             "content": str(result)
         })
-    followup = client.chat.completions.create(model="gpt-4", messages=messages)
-    
-    print("TOOL WAS CALLED")
-    print("Final Answer:", followup.choices[0].message.content)
-else:
-    print("No tool was called.")
+
