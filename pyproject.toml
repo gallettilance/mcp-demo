@@ -1,0 +1,14 @@
+[project]
+name = "mcp-lance"
+version = "0.1.0"
+description = "Lance's MCP Server - For Learning"
+authors = [{ name = "Lance Galletti" }]
+
+
+dependencies = [
+    "fastapi",
+    "uvicorn",
+]
+
+[project.scripts]
+mcp-lance = "mcp_lance:main"

@@ -108,4 +108,3 @@ while True:
             "name": tool_name,
             "content": str(result)
         })
-

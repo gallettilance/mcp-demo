@@ -1,8 +1,14 @@
-# RH Day of Learning 5/9/2025
+# Llama Stack + MCP demo
+
+## Run the MCP server
 
 MCP server that can do math to extend an LLM's capability.
 
-1. Run the MCP server with `python3 server.py`
-2. Create a file called `apikey.txt` with your OPENAI api key
-3. Run `python3 llm.py` in another terminal
+1. Install stuff `pip install -e .`
+2. Run the MCP server with `mcp-lance --verbose`
+
+## Run the llama stack
+
+1. `export OPENAI_API_KEY="..."`
+2. Run `llama stack run run.yml`
 
