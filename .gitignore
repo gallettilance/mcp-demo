@@ -2,3 +2,6 @@ __pycache__/
 apikey.txt
 env/
 *.egg-info/
+*.db
+*/env/
+None/
