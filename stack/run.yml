@@ -10,6 +10,7 @@ distribution_spec:
 apis:
   - inference
   - telemetry
+  - agents
   - vector_io
   - safety
   - tool_runtime
@@ -44,7 +45,7 @@ tool_groups:
   - toolgroup_id: mcp::filesystem
     provider_id: model-context-protocol
     mcp_endpoint:
-      uri: "http://localhost:8001/mcp"
+      uri: "http://localhost:8000/sse"
 
 models:
   - model_id: gpt-4-turbo

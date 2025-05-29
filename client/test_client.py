@@ -1,19 +1,76 @@
+import os
+
+import fire
 from llama_stack_client import LlamaStackClient
+from llama_stack_client.lib.agents.agent import Agent
+from llama_stack_client.lib.agents.event_logger import EventLogger
+from llama_stack_client.types.agent_create_params import AgentConfig
+from termcolor import colored
 
-PROMPT = "Say Hello"
 
-client = LlamaStackClient(base_url="http://localhost:8321")
+def main():
+    host = 'localhost'
+    port = 8321
 
-print(client.agents)
+    client = LlamaStackClient(
+        base_url=f"http://{host}:{port}",
+    )
 
-session = client.agents.session.create(
-    agent_id="meta-reference",
-    session_name="test-session"
-)
+    available_shields = [shield.identifier for shield in client.shields.list()]
+    if not available_shields:
+        print(colored("No available shields. Disabling safety.", "yellow"))
+    else:
+        print(f"Available shields found: {available_shields}")
 
-response = client.agents.session.chat(
-    session_id=session.session_id,
-    messages=[{"role": "user", "content": PROMPT}],
-)
+    available_models = [
+        model.identifier for model in client.models.list() if model.model_type == "llm"
+    ]
 
-print(response.completion_message.content)
+    # the model decision logic is basic
+    if not available_models:
+        print(colored("No available models. Exiting.", "red"))
+        return
+    else:
+        selected_model = available_models[0]
+        print(f"Using model: {selected_model}")
+
+    tools = client.tools.list(toolgroup_id="mcp::filesystem")
+    print(f'Available tools: {tools}')
+
+    agent_config = AgentConfig(
+        model=selected_model,
+        instructions="You are a helpful assistant.",
+        toolgroups=(
+            [
+                "mcp::filesystem"
+           ]
+        ),
+        tool_choice="auto",
+        enable_session_persistence=False,
+    )
+    agent = Agent(
+        client, agent_config
+        
+    )
+    session_id = agent.create_session("test-session")
+
+    while True:
+        prompt = input("Enter a prompt: ")
+        if not prompt:
+            break
+        response = agent.create_turn(
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ],
+            session_id=session_id,
+        )
+
+        for log in EventLogger().log(response):
+            log.print()
+
+
+if __name__ == "__main__":
+    fire.Fire(main)
