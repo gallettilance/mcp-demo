@@ -2,11 +2,34 @@ version: '2'
 image_name: llamastack-biology
 container_image: null
 
+distribution_spec:
+  local:
+    services:
+      - agents
+
 apis:
   - inference
   - telemetry
+  - agents
+  - vector_io
+  - safety
+  - tool_runtime
 
 providers:
+  agents:
+    - provider_id: meta-reference
+      provider_type: inline::meta-reference
+      config:
+        persistence_store:
+          type: sqlite
+          db_path: ./kvstore.db
+        responses_store:
+          type: sqlite
+          db_path: ./responses.db
+  tool_runtime:
+    - provider_id: model-context-protocol
+      provider_type: remote::model-context-protocol
+      config: {}
   inference:
     - provider_id: openai
       provider_type: remote::openai
@@ -23,9 +46,3 @@ models:
     provider_id: openai
     model_type: llm
     provider_model_id: gpt-4-turbo
-
-server:
-  port: 8002
-
-logging:
-  level: debug

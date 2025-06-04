@@ -52,9 +52,3 @@ models:
     provider_id: openai
     model_type: llm
     provider_model_id: gpt-4-turbo
-
-server:
-  port: 8321
-
-logging:
-  level: debug

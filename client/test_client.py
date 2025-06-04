@@ -1,10 +1,7 @@
-import os
-
 import fire
 from llama_stack_client import LlamaStackClient
 from llama_stack_client.lib.agents.agent import Agent
 from llama_stack_client.lib.agents.event_logger import EventLogger
-from llama_stack_client.types.agent_create_params import AgentConfig
 from termcolor import colored
 
 
@@ -37,20 +34,15 @@ def main():
     tools = client.tools.list(toolgroup_id="mcp::filesystem")
     print(f'Available tools: {tools}')
 
-    agent_config = AgentConfig(
+    agent = Agent(
+        client=client,
         model=selected_model,
         instructions="You are a helpful assistant.",
-        toolgroups=(
-            [
-                "mcp::filesystem"
-           ]
-        ),
-        tool_choice="auto",
+        sampling_params={},
+        tools=["mcp::filesystem"],
+        input_shields=[],
+        output_shields=[],
         enable_session_persistence=False,
-    )
-    agent = Agent(
-        client, agent_config
-        
     )
     session_id = agent.create_session("test-session")
 
@@ -67,10 +59,13 @@ def main():
             ],
             session_id=session_id,
         )
-
+        
+        acc = ""
         for log in EventLogger().log(response):
-            log.print()
+            if log.role != 'tool_execution':
+                acc += log.content
 
+        print(acc)
 
 if __name__ == "__main__":
     fire.Fire(main)
