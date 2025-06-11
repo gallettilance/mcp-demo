@@ -12,19 +12,17 @@ def create_agent(client: LlamaStackClient, CONTENT) -> Agent:
         instructions=CONTENT,
     )
 
-BIOLOGY_URL = 'http://localhost:8002'
-PHYSICS_URL = 'http://localhost:8003'
+TOOL_STACK_URL = 'http://localhost:8003'
 BIOLOGY_CONTENT = "You are a biology expert assistant. You answer university-level biology questions clearly, using equations and theory where appropriate. You refuse to answer non-biology questions."
 PHYSICS_CONTENT = "You are a physics expert assistant. You answer university-level physics questions clearly, using equations and theory where appropriate. You refuse to answer non-physics questions."
 
-biology_client = LlamaStackClient(base_url=BIOLOGY_URL)
-physics_client = LlamaStackClient(base_url=PHYSICS_URL)
+tool_stack_client = LlamaStackClient(base_url=TOOL_STACK_URL)
 
-biology_agent = create_agent(biology_client, BIOLOGY_CONTENT)
-biology_session_id = biology_agent.create_session("test-session")
+biology_agent = create_agent(tool_stack_client, BIOLOGY_CONTENT)
+biology_session_id = biology_agent.create_session("bio-session")
 
-physics_agent = create_agent(physics_client, PHYSICS_CONTENT)
-physics_session_id = physics_agent.create_session("test-session")
+physics_agent = create_agent(tool_stack_client, PHYSICS_CONTENT)
+physics_session_id = physics_agent.create_session("phy-session")
 
 
 @mcp.tool()

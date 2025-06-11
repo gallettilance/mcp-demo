@@ -60,12 +60,13 @@ def main():
             session_id=session_id,
         )
         
-        acc = ""
+        # acc = ""
         for log in EventLogger().log(response):
-            if log.role != 'tool_execution':
-                acc += log.content
+            log.print()
+            # if log.role != 'tool_execution':
+            #     acc += log.content
 
-        print(acc)
+        # print(acc)
 
 if __name__ == "__main__":
     fire.Fire(main)
