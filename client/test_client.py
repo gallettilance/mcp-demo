@@ -1,72 +1,70 @@
-import fire
 from llama_stack_client import LlamaStackClient
 from llama_stack_client.lib.agents.agent import Agent
 from llama_stack_client.lib.agents.event_logger import EventLogger
-from termcolor import colored
 
+import streamlit as st
+import requests
+import re
 
-def main():
-    host = 'localhost'
-    port = 8321
+def pretty_response(response):
+    prev_role, ok = None, False
+    for log in EventLogger().log(response):
+        if ok:
+            yield log.content
+        elif prev_role is None and log.role == "tool_execution":
+            yield "🛠 Used Tool: "
+            match = re.search(r"Tool:(\w+)", log.content)
+            if match:
+                tool_name = match.group(1)
+                yield f":orange[`{tool_name}`]"
+            yield '  \n'
+            prev_role = log.role
+        elif prev_role == 'tool_execution' and log.role == "inference":
+            ok = True
+            prev_role = log.role
+            yield log.content
 
-    client = LlamaStackClient(
-        base_url=f"http://{host}:{port}",
-    )
+host = 'localhost'
+port = 8321
 
-    available_shields = [shield.identifier for shield in client.shields.list()]
-    if not available_shields:
-        print(colored("No available shields. Disabling safety.", "yellow"))
-    else:
-        print(f"Available shields found: {available_shields}")
+client = LlamaStackClient(
+    base_url=f"http://{host}:{port}",
+)
 
-    available_models = [
-        model.identifier for model in client.models.list() if model.model_type == "llm"
-    ]
+agent = Agent(
+    client=client,
+    model=client.models.list()[0].identifier,
+    instructions="You are a helpful assistant.",
+    sampling_params={},
+    tools=["mcp::filesystem"],
+    input_shields=[],
+    output_shields=[],
+    enable_session_persistence=False,
+)
 
-    # the model decision logic is basic
-    if not available_models:
-        print(colored("No available models. Exiting.", "red"))
-        return
-    else:
-        selected_model = available_models[0]
-        print(f"Using model: {selected_model}")
+session_id = agent.create_session("test-session")
 
-    tools = client.tools.list(toolgroup_id="mcp::filesystem")
-    print(f'Available tools: {tools}')
+st.set_page_config(page_title="Router Agent UI", layout="centered")
+st.title("🔀 Multi-Agent Router Interface")
+user_input = st.text_area("🗣️ Enter your prompt", height=150)
 
-    agent = Agent(
-        client=client,
-        model=selected_model,
-        instructions="You are a helpful assistant.",
-        sampling_params={},
-        tools=["mcp::filesystem"],
-        input_shields=[],
-        output_shields=[],
-        enable_session_persistence=False,
-    )
-    session_id = agent.create_session("test-session")
-
-    while True:
-        prompt = input("Enter a prompt: ")
-        if not prompt:
-            break
+if st.button("Run Agent") and user_input.strip():
+    try:
         response = agent.create_turn(
             messages=[
                 {
                     "role": "user",
-                    "content": prompt,
+                    "content": user_input,
                 }
             ],
             session_id=session_id,
         )
         
-        # acc = ""
-        for log in EventLogger().log(response):
-            log.print()
-            # if log.role != 'tool_execution':
-            #     acc += log.content
+        st.subheader("🤖 Agent Response")
+        with st.spinner("Thinking..."):
+            st.write_stream(pretty_response(response))
 
-        # print(acc)
-
-if __name__ == "__main__":
-    fire.Fire(main)
+    except requests.exceptions.RequestException as e:
+        st.error(f"Failed to reach router agent: {e}")
+else:
+    st.info("Enter a prompt and press 'Run Agent' to begin.")
