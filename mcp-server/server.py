@@ -25,10 +25,14 @@ physics_agent = create_agent(tool_stack_client, PHYSICS_CONTENT)
 physics_session_id = physics_agent.create_session("phy-session")
 
 
-@mcp.tool()
-def biology(text: str) -> str:
-    """Answer Biology questions."""
-    
+@mcp.tool(
+    name="biology",
+    description="Answer Biology questions.",
+    annotations={
+        "destructiveHint": True,
+    }
+)
+def biology(text: str) -> str:    
     response = biology_agent.create_turn(
         messages=[
             {
