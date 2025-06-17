@@ -1,0 +1,6 @@
+module: llama_stack_provider_quota_limiter
+config_class: llama_stack_provider_quota_limiter.QuotaLimiterConfig
+pip_packages: []
+api_dependencies: 
+    - inference
+optional_api_dependencies: []

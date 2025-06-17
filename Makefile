@@ -2,12 +2,6 @@
 
 install:
 	@pip install -r requirements.txt
-	@cd ../llama-stack/ && \
-	rm -rf *.egg-info && \
-	pip install -e .
-	@cd ../llama-stack-client-python/ && \
-	rm -rf *.egg-info && \
-	pip install -e .
 
 clean:
 	@echo "Cleaning up background services..."

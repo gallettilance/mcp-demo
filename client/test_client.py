@@ -25,13 +25,15 @@ port = 8321
 
 client = LlamaStackClient(base_url=f"http://{host}:{port}")
 
+client.shields.register(shield_id="quota-limiter-shield", provider_shield_id="quota-limiter")
+
 agent = HumanApprovalAgent(
     client=client,
     model=client.models.list()[0].identifier,
     instructions="You are a helpful assistant.",
     sampling_params={},
-    tools=["mcp::filesystem"],
-    input_shields=[],
+    tools=["mcp::filesystem", "mcp::quota"],
+    input_shields=["quota-limiter-shield"],
     output_shields=[],
     enable_session_persistence=False,
     approval_callback=approval_callback,

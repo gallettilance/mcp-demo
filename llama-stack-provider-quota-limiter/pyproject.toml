@@ -1,0 +1,10 @@
+[project]
+name = "llama-stack-provider-quota-limiter"
+version = "0.1.0"
+description = "Quota Limiter safety provider for llama stack"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "llama-stack",
+    "pydantic",
+]

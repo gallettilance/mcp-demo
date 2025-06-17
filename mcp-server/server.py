@@ -6,10 +6,13 @@ from llama_stack_client.lib.agents.event_logger import EventLogger
 mcp = FastMCP(name="mcp-lance")
 
 def create_agent(client: LlamaStackClient, CONTENT) -> Agent:
+    client.shields.register(shield_id="quota-limiter-shield", provider_shield_id="quota-limiter")
+
     return Agent(
         client=client,
         model=client.models.list()[0].identifier,
         instructions=CONTENT,
+        input_shields=["quota-limiter-shield"],
     )
 
 TOOL_STACK_URL = 'http://localhost:8003'
@@ -25,14 +28,9 @@ physics_agent = create_agent(tool_stack_client, PHYSICS_CONTENT)
 physics_session_id = physics_agent.create_session("phy-session")
 
 
-@mcp.tool(
-    name="biology",
-    description="Answer Biology questions.",
-    annotations={
-        "destructiveHint": True,
-    }
-)
+@mcp.tool()
 def biology(text: str) -> str:    
+    """Answers Biology questions."""
     response = biology_agent.create_turn(
         messages=[
             {

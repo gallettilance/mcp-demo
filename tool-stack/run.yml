@@ -2,6 +2,8 @@ version: '2'
 image_name: llamastack-physics
 container_image: null
 
+external_providers_dir: ../stack/providers.d/
+
 distribution_spec:
   local:
     services:
@@ -40,6 +42,13 @@ providers:
       provider_type: inline::meta-reference
       config:
         sinks: ['console']
+  safety:
+    - provider_id: quota-limiter
+      provider_type: inline::quota-limiter
+      config: {
+        "db_path": "../stack/quota.txt",
+        "inital_quota": 100,
+      }
 
 models:
   - model_id: gpt-4-turbo
