@@ -15,6 +15,10 @@ Parent should look like:
 ```
 
 ## Install and run
+For the quota MCP server run:
+```
+export FASTMCP_PORT=8001
+```
 
 ```bash
     make install

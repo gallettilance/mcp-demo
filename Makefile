@@ -2,6 +2,7 @@
 
 install:
 	@pip install -r requirements.txt
+	@pip install -e llama-stack-provider-quota-limiter 
 
 clean:
 	@echo "Cleaning up background services..."
