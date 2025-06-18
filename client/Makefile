@@ -2,4 +2,4 @@
 
 run:
 	@echo "Running streamlit..."
-	@streamlit run test_client.py
+	@python chat.py localhost 8321
